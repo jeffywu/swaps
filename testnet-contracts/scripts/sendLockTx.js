@@ -68,11 +68,11 @@ module.exports = async () => {
   // TODO: Input validation
   if (!DEFAULT_PARAMS) {
     if (NETWORK_ROPSTEN) {
-      cosmosRecipient = process.argv[6];
+      cosmosRecipient = Web3.utils.utf8ToHex(process.argv[6]);
       coinDenom = process.argv[7];
       amount = parseInt(process.argv[8], 10);
     } else {
-      cosmosRecipient = process.argv[4];
+      cosmosRecipient = Web3.utils.utf8ToHex(process.argv[4]);
       coinDenom = process.argv[5];
       amount = parseInt(process.argv[6], 10);
     }
@@ -105,6 +105,10 @@ module.exports = async () => {
   console.log("Connecting to contract....");
   const { logs } = await contract.deployed().then(function(instance) {
     console.log("Connected to contract, sending lock...");
+    console.log(`Rec: ${cosmosRecipient}`);
+    console.log(`Denom: ${coinDenom}`);
+    console.log(`Amt: ${amount}`);
+    console.log(`From: ${accounts[0]}`);
     return instance.lock(cosmosRecipient, coinDenom, amount, {
       from: accounts[0],
       value: coinDenom === DEFAULT_ETH_DENOM ? amount : 0,
@@ -113,6 +117,7 @@ module.exports = async () => {
   });
 
   console.log("Sent lock...");
+  console.log(logs);
 
   // Get event logs
   const event = logs.find(e => e.event === "LogLock");

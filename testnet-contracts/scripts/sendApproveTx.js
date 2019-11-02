@@ -95,7 +95,7 @@ module.exports = async () => {
   // Send lock transaction
   const { logs } = await tokenContract.deployed().then(function(instance) {
     return instance.approve(bridgeContractAddress, tokenAmount, {
-      from: accounts[1],
+      from: accounts[0],
       value: 0,
       gas: 300000 // 300,000 Gwei
     });
