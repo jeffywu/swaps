@@ -9,11 +9,11 @@ type StoredOrder struct {
     Tokens          sdk.Coin            `json:"tokens"`
     Price           sdk.Uint            `json:"price"`
     Address         sdk.AccAddress      `json:"address"`
-    Auction         string              `json:"auction"`
-    OrderId         string              `json:"order_id"`
+    Auction         sdk.Uint              `json:"auction"`
+    OrderId         sdk.Uint              `json:"order_id"`
 }
 
-func NewStoredOrder(orderType string, tokens sdk.Coin, price sdk.Uint, address sdk.AccAddress, auction string, orderId string) StoredOrder {
+func NewStoredOrder(orderType string, tokens sdk.Coin, price sdk.Uint, address sdk.AccAddress, auction sdk.Uint, orderId sdk.Uint) StoredOrder {
     return StoredOrder{
         OrderType: orderType,
         Tokens: tokens,
@@ -24,6 +24,6 @@ func NewStoredOrder(orderType string, tokens sdk.Coin, price sdk.Uint, address s
     }
 }
 
-func NewStoredOrderFromMsgOrder(msg MsgOrder, auction string, orderId string) StoredOrder {
+func NewStoredOrderFromMsgOrder(msg MsgOrder, auction sdk.Uint, orderId sdk.Uint) StoredOrder {
     return NewStoredOrder(msg.OrderType, msg.Tokens, msg.Price, msg.Address, auction, orderId)
 }
