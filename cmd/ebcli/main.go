@@ -21,7 +21,6 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	bank "github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
-	ordercmd "github.com/cosmos/peggy/x/swaps/client/cli"
 
 	"github.com/cosmos/peggy/app"
 )
@@ -57,8 +56,6 @@ func main() {
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),
 		txCmd(cdc),
-		client.LineBreak,
-		orderCmd(cdc),
 		client.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
 		client.LineBreak,
@@ -139,24 +136,6 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	txCmd.RemoveCommand(cmdsToRemove...)
 
 	return txCmd
-}
-
-func orderCmd(cdc *amino.Codec) *cobra.Command {
-	orderCmd := &cobra.Command{
-		Use:	"order",
-		Short: 	"Order subcommands",
-	}
-
-	orderCmd.AddCommand(
-		ordercmd.GetOrdersCmd(cdc),
-		ordercmd.PlaceOrderCmd(cdc),
-		client.LineBreak,
-	)
-
-	// TODO: enable this?
-	// app.ModuleBasics.AddOrderCommands(orderCmd, cdc)
-
-	return orderCmd
 }
 
 func initConfig(cmd *cobra.Command) error {

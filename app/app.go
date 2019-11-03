@@ -136,7 +136,7 @@ func NewEthereumBridgeApp(logger log.Logger, db dbm.DB,
 	app.OracleKeeper = oracle.NewKeeper(app.cdc, keys[oracle.StoreKey], app.StakingKeeper, oracle.DefaultCodespace, oracle.DefaultConsensusNeeded)
 
 	// TODO: need to create this
-	app.SwapsKeeper = swaps.NewKeeper(app.BankKeeper, app.cdc, keys[swaps.StoreKey])
+	app.SwapsKeeper = swaps.NewKeeper(app.BankKeeper, keys[swaps.StoreKey], app.cdc)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
