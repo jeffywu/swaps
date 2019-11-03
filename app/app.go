@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/peggy/x/ethbridge"
 	"github.com/cosmos/peggy/x/oracle"
+	"github.com/cosmos/peggy/x/swaps"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -50,6 +51,7 @@ var (
 		supply.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
+		swaps.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -88,6 +90,7 @@ type EthereumBridgeApp struct {
 
 	// EthBridge keepers
 	OracleKeeper oracle.Keeper
+	SwapsKeeper	 swaps.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -105,7 +108,7 @@ func NewEthereumBridgeApp(logger log.Logger, db dbm.DB,
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
-		supply.StoreKey, oracle.StoreKey, params.StoreKey)
+		supply.StoreKey, oracle.StoreKey, params.StoreKey, swaps.StoreKey)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
@@ -132,6 +135,9 @@ func NewEthereumBridgeApp(logger log.Logger, db dbm.DB,
 
 	app.OracleKeeper = oracle.NewKeeper(app.cdc, keys[oracle.StoreKey], app.StakingKeeper, oracle.DefaultCodespace, oracle.DefaultConsensusNeeded)
 
+	// TODO: need to create this
+	app.SwapsKeeper = swaps.NewKeeper(app.BankKeeper, app.cdc, keys[swaps.StoreKey])
+
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -143,6 +149,7 @@ func NewEthereumBridgeApp(logger log.Logger, db dbm.DB,
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, ethbridge.DefaultCodespace, app.cdc),
+		swaps.NewAppModule(app.SwapsKeeper, app.BankKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
