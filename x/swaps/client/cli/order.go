@@ -6,7 +6,7 @@ import (
     "strconv"
     "github.com/spf13/cobra"
 
-    //"github.com/cosmos/cosmos-sdk/client"
+    "github.com/cosmos/cosmos-sdk/client"
     "github.com/cosmos/cosmos-sdk/client/context"
     "github.com/cosmos/cosmos-sdk/x/auth/client/utils"
     "github.com/cosmos/cosmos-sdk/codec"
@@ -40,10 +40,10 @@ func GetOrdersCmd(cdc *codec.Codec) *cobra.Command {
 
 // Places an order 
 func PlaceOrderCmd(cdc *codec.Codec) *cobra.Command {
-    return &cobra.Command{
-        Use:    "place [type] [address] [denom] [amount] [price]",
+    cmd := &cobra.Command{
+        Use:    "place [type] [amount] [price]",
         Short:  "Place an order for amount at price, the type must be [bid|offer]",
-        Args:   cobra.ExactArgs(5),
+        Args:   cobra.ExactArgs(3),
         RunE:   func(cmd *cobra.Command, args[] string) error {
             cliCtx := context.NewCLIContext().WithCodec(cdc)
             txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -54,32 +54,36 @@ func PlaceOrderCmd(cdc *codec.Codec) *cobra.Command {
                 return errors.New("Order type must be bid or offer")
             }
 
-            address, err := sdk.AccAddressFromBech32(args[1])
+            tokens, err := sdk.ParseCoin(args[1])
             if err != nil {
                 return err
             }
 
-            denom := args[2]
-            amount, err := strconv.Atoi(args[3])
-            if err != nil {
-                return err
-            }
-            tokens := sdk.NewCoin(denom, sdk.NewInt(int64(amount)))
-
-            price, err := strconv.Atoi(args[4])
+            price, err := strconv.Atoi(args[2])
             if err != nil {
                 return err
             }
             price_uint := sdk.NewUint(uint64(price))
 
 
-            msg := types.NewMsgOrder(orderType, tokens, price_uint, address)
+            msg := types.NewMsgOrder(orderType, tokens, price_uint, cliCtx.GetFromAddress())
             err = msg.ValidateBasic()
             if err != nil {
                 return err
             }
 
-            return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+            err = utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+            if err != nil {
+                fmt.Println("cli", cliCtx.GetFromAddress())
+                return err
+            }
+
+            return nil
         },
     }
+
+    cmd = client.PostCommands(cmd)[0]
+
+    return cmd
+
 }
